@@ -1,10 +1,12 @@
 package com.senseoflanguage.mapper;
 
 import com.senseoflanguage.dto.request.WordRequest;
+import com.senseoflanguage.dto.response.PageResponse;
 import com.senseoflanguage.dto.response.WordResponse;
 import com.senseoflanguage.model.Word;
 import org.dozer.DozerBeanMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -23,7 +25,6 @@ public class WordMapper {
     public WordMapper(DozerBeanMapper mapper) {
         this.mapper = mapper;
     }
-
 
     public Word requestToModel(WordRequest dto) {
         return dto == null ? null : mapper.map(dto, Word.class);
@@ -63,6 +64,20 @@ public class WordMapper {
             return models.stream()
                     .map(o -> mapper.map(o, WordResponse.class))
                     .collect(Collectors.toList());
+        }
+    }
+
+    public PageResponse<WordResponse> pageToPageResponse(Page<Word> page) {
+        if (page == null) {
+            return new PageResponse<>();
+        } else {
+            return new PageResponse<>(
+                    page.getTotalPages(),
+                    page.getTotalElements(),
+                    page.get()
+                            .map(this::modelToResponse)
+                            .collect(Collectors.toList())
+            );
         }
     }
 

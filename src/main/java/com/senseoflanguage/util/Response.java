@@ -1,7 +1,10 @@
 package com.senseoflanguage.util;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -43,6 +46,10 @@ public class Response<T> implements Serializable {
 
     public void setStatus(HttpStatus status) {
         this.status = status;
+        HttpServletResponse httpServletResponse = getHttpServletResponse();
+        if (httpServletResponse != null) {
+            httpServletResponse.setStatus(status.value());
+        }
     }
 
     public T getBody() {
@@ -75,6 +82,14 @@ public class Response<T> implements Serializable {
 
     public void setDateTime(LocalDateTime dateTime) {
         this.dateTime = dateTime;
+    }
+
+    private HttpServletResponse getHttpServletResponse() {
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (requestAttributes == null) {
+            return null;
+        }
+        return requestAttributes.getResponse();
     }
 
     @Override

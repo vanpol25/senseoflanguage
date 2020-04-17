@@ -5,6 +5,8 @@ import com.senseoflanguage.exception.ModelNotFoundException;
 import com.senseoflanguage.model.Word;
 import com.senseoflanguage.service.WordService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,8 +28,18 @@ public class WordServiceImpl implements WordService {
     }
 
     @Override
+    public List<Word> createAll(List<Word> requests) {
+        return wordRepository.saveAll(requests);
+    }
+
+    @Override
     public Word update(Word word) {
         return wordRepository.save(word);
+    }
+
+    @Override
+    public List<Word> updateAll(List<Word> requests) {
+        return wordRepository.saveAll(requests);
     }
 
     @Override
@@ -41,6 +53,12 @@ public class WordServiceImpl implements WordService {
     @Override
     public Word delete(Word word) {
         return delete(word.getId());
+    }
+
+    @Override
+    public List<Word> deleteAllByBody(List<Word> requests) {
+        wordRepository.deleteAll(requests);
+        return requests;
     }
 
     @Override
@@ -66,6 +84,11 @@ public class WordServiceImpl implements WordService {
     public Word findById(String id) {
         return wordRepository.findById(id)
                 .orElseThrow(() -> new ModelNotFoundException(String.format("Could not find word with id = '%s'!", id)));
+    }
+
+    @Override
+    public Page<Word> findAll(Pageable pageable) {
+        return wordRepository.findAll(pageable);
     }
 
 }
