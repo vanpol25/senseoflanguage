@@ -1,5 +1,8 @@
 package com.senseoflanguage.dto.request;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -7,8 +10,12 @@ import java.util.Objects;
 
 public class WordRequest implements Serializable {
 
+    @Null(groups = OnCreate.class)
+    @NotNull(groups = {OnUpdate.class, OnDelete.class})
     private String id;
+    @NotBlank(groups = {OnCreate.class, OnUpdate.class})
     private String eng;
+    @NotBlank(groups = {OnCreate.class, OnUpdate.class})
     private String ukr;
     private String translit;
     private Map<String, List<MeaningRequest>> meaning;
@@ -82,6 +89,15 @@ public class WordRequest implements Serializable {
                 ", translit='" + translit + '\'' +
                 ", meaning=" + meaning +
                 '}';
+    }
+
+    public interface OnCreate {
+    }
+
+    public interface OnUpdate {
+    }
+
+    public interface OnDelete {
     }
 
 }

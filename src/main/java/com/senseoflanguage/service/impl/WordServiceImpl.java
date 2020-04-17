@@ -1,6 +1,7 @@
 package com.senseoflanguage.service.impl;
 
 import com.senseoflanguage.dao.WordRepository;
+import com.senseoflanguage.exception.ModelNotFoundException;
 import com.senseoflanguage.model.Word;
 import com.senseoflanguage.service.WordService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,12 +31,16 @@ public class WordServiceImpl implements WordService {
     }
 
     @Override
-    public Word delete(Word word) {
-        Word findById = wordRepository.findById(word.getId())
-                .orElseThrow(() -> new RuntimeException("Could not find word = " + word));
+    public Word delete(String id) {
+        Word findById = findById(id);
 
         wordRepository.delete(findById);
         return findById;
+    }
+
+    @Override
+    public Word delete(Word word) {
+        return delete(word.getId());
     }
 
     @Override
@@ -49,11 +54,18 @@ public class WordServiceImpl implements WordService {
     }
 
     @Override
+    @Deprecated
     public List<Word> deleteList(List<Word> words) {
         List<String> wordsId = words.stream().map(Word::getId).collect(Collectors.toList());
         Iterable<Word> allById = wordRepository.findAllById(wordsId);
         wordRepository.deleteAll(allById);
         return words;
+    }
+
+    @Override
+    public Word findById(String id) {
+        return wordRepository.findById(id)
+                .orElseThrow(() -> new ModelNotFoundException(String.format("Could not find word with id = '%s'!", id)));
     }
 
 }

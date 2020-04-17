@@ -7,6 +7,10 @@ import org.dozer.DozerBeanMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 public class WordMapper {
 
@@ -21,11 +25,11 @@ public class WordMapper {
     }
 
 
-    public Word requestToEntity(WordRequest dto) {
+    public Word requestToModel(WordRequest dto) {
         return dto == null ? null : mapper.map(dto, Word.class);
     }
 
-    public Word requestToEntity(WordRequest dto, Word model) {
+    public Word requestToModel(WordRequest dto, Word model) {
         if (dto == null && model == null) {
             return new Word();
         } else if (dto == null) {
@@ -38,8 +42,28 @@ public class WordMapper {
         }
     }
 
-    public WordResponse toDtoResponse(Word model) {
+    public List<Word> requestsToModels(List<WordRequest> requests) {
+        if (requests == null) {
+            return Collections.emptyList();
+        } else {
+            return requests.stream()
+                    .map(o -> mapper.map(o, Word.class))
+                    .collect(Collectors.toList());
+        }
+    }
+
+    public WordResponse modelToResponse(Word model) {
         return model == null ? null : mapper.map(model, WordResponse.class);
+    }
+
+    public List<WordResponse> modelsToResponses(List<Word> models) {
+        if (models == null) {
+            return Collections.emptyList();
+        } else {
+            return models.stream()
+                    .map(o -> mapper.map(o, WordResponse.class))
+                    .collect(Collectors.toList());
+        }
     }
 
 }
