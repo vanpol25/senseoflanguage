@@ -3,6 +3,7 @@ package com.senseoflanguage.service.impl;
 import com.senseoflanguage.dao.WordRepository;
 import com.senseoflanguage.exception.ModelNotFoundException;
 import com.senseoflanguage.model.Word;
+import com.senseoflanguage.service.WordDefinition;
 import com.senseoflanguage.service.WordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,29 +17,22 @@ import java.util.stream.Collectors;
 public class WordServiceImpl implements WordService {
 
     private WordRepository wordRepository;
+    private WordDefinition wordDefinition;
 
     @Autowired
-    public WordServiceImpl(WordRepository wordRepository) {
+    public WordServiceImpl(WordRepository wordRepository,
+                           WordDefinition wordDefinition) {
         this.wordRepository = wordRepository;
+        this.wordDefinition = wordDefinition;
     }
 
     @Override
-    public Word create(Word word) {
+    public Word save(Word word) {
         return wordRepository.save(word);
     }
 
     @Override
-    public List<Word> createAll(List<Word> requests) {
-        return wordRepository.saveAll(requests);
-    }
-
-    @Override
-    public Word update(Word word) {
-        return wordRepository.save(word);
-    }
-
-    @Override
-    public List<Word> updateAll(List<Word> requests) {
+    public List<Word> saveAll(List<Word> requests) {
         return wordRepository.saveAll(requests);
     }
 
@@ -56,34 +50,24 @@ public class WordServiceImpl implements WordService {
     }
 
     @Override
-    public List<Word> deleteAllByBody(List<Word> requests) {
-        wordRepository.deleteAll(requests);
-        return requests;
-    }
-
-    @Override
-    public List<Word> createList(List<Word> words) {
-        return wordRepository.saveAll(words);
-    }
-
-    @Override
-    public List<Word> updateList(List<Word> words) {
-        return wordRepository.saveAll(words);
-    }
-
-    @Override
     @Deprecated
-    public List<Word> deleteList(List<Word> words) {
-        List<String> wordsId = words.stream().map(Word::getId).collect(Collectors.toList());
+    public List<Word> deleteAllByBody(List<Word> requests) {
+        List<String> wordsId = requests.stream().map(Word::getId).collect(Collectors.toList());
         Iterable<Word> allById = wordRepository.findAllById(wordsId);
         wordRepository.deleteAll(allById);
-        return words;
+        return requests;
     }
 
     @Override
     public Word findById(String id) {
         return wordRepository.findById(id)
                 .orElseThrow(() -> new ModelNotFoundException(String.format("Could not find word with id = '%s'!", id)));
+    }
+
+    @Override
+    public Word findByName(String name) {
+        return wordRepository.findByEng(name)
+                .orElseThrow(() -> new ModelNotFoundException(String.format("Could not find word with name = '%s'!", name)));
     }
 
     @Override
