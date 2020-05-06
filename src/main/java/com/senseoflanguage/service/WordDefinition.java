@@ -6,6 +6,6 @@ import java.io.IOException;
 
 public interface WordDefinition {
 
-    Word getDefinition(String word) throws IOException;
+    Word addDefinition(Word word) throws IOException;
 
 }

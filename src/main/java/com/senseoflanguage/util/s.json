@@ -1,0 +1,31 @@
+{
+  "_id": {
+    "$oid": "5eb1f5c5adea7960be1f1ae1"
+  },
+  "eng": "string",
+  "ukr": "string",
+  "translit": "string",
+  "frequency": "0",
+  "collection": "2",
+  "results": [
+    {
+      "definition": "string",
+      "partOfSpeech": "string",
+      "synonyms": [
+        "string"
+      ],
+      "antonyms": [],
+      "typeOf": [
+        "string"
+      ],
+      "hasTypes": [
+        "string"
+      ],
+      "similarTo": [],
+      "examples": [
+        "string"
+      ]
+    }
+  ],
+  "_class": "com.senseoflanguage.model.Word"
+},

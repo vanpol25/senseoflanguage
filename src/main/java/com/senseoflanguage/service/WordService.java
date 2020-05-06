@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface WordService {
 
-    Word save(Word word);
+    Word create(Word word);
 
     Word delete(String id);
 
@@ -18,9 +18,12 @@ public interface WordService {
 
     Page<Word> findAll(Pageable pageable);
 
-    List<Word> saveAll(List<Word> requests);
+    List<Word> createAll(List<Word> requests);
 
     List<Word> deleteAllByBody(List<Word> requests);
 
     Word findByName(String name);
+
+    Word update(Word request);
+
 }

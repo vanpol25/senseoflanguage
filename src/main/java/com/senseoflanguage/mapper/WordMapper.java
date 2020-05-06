@@ -4,6 +4,8 @@ import com.senseoflanguage.dto.request.WordRequest;
 import com.senseoflanguage.dto.response.PageResponse;
 import com.senseoflanguage.dto.response.WordResponse;
 import com.senseoflanguage.model.Word;
+import com.senseoflanguage.model.words_api.DefinitionWordsApi;
+import com.senseoflanguage.model.words_api.WordWordsApi;
 import org.dozer.DozerBeanMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,66 +18,82 @@ import java.util.stream.Collectors;
 @Component
 public class WordMapper {
 
-    private DozerBeanMapper mapper;
-
-    public WordMapper() {
-    }
+    private final DozerBeanMapper mapper;
+    private final DefinitionMapper definitionMapper;
 
     @Autowired
-    public WordMapper(DozerBeanMapper mapper) {
+    public WordMapper(DozerBeanMapper mapper,
+                      DefinitionMapper definitionMapper) {
         this.mapper = mapper;
+        this.definitionMapper = definitionMapper;
     }
 
-    public Word requestToModel(WordRequest dto) {
-        return dto == null ? null : mapper.map(dto, Word.class);
+    public Word map(WordRequest source) {
+        return source == null ? null : mapper.map(source, Word.class);
     }
 
-    public Word requestToModel(WordRequest dto, Word model) {
-        if (dto == null && model == null) {
-            return new Word();
-        } else if (dto == null) {
-            return model;
-        } else if (model == null) {
-            return mapper.map(dto, Word.class);
+    public Word map(WordRequest source, Word destination) {
+        if (source == null && destination == null) {
+            return null;
+        } else if (source == null) {
+            return destination;
+        } else if (destination == null) {
+            return mapper.map(source, Word.class);
         } else {
-            mapper.map(dto, model);
-            return model;
+            mapper.map(source, destination);
+            return destination;
         }
     }
 
-    public List<Word> requestsToModels(List<WordRequest> requests) {
-        if (requests == null) {
+    public Word map(WordWordsApi source, Word destination) {
+        if (source == null && destination == null) {
+            return null;
+        } else if (source == null) {
+            return destination;
+        } else if (destination == null) {
+            return null;
+        } else {
+            for (DefinitionWordsApi definition : source.getResults()) {
+                destination.getResults().add(definitionMapper.map(definition));
+            }
+            destination.setFrequency(source.getFrequency());
+            return destination;
+        }
+    }
+
+    public List<Word> mapList(List<WordRequest> source) {
+        if (source == null) {
             return Collections.emptyList();
         } else {
-            return requests.stream()
+            return source.stream()
                     .map(o -> mapper.map(o, Word.class))
                     .collect(Collectors.toList());
         }
     }
 
-    public WordResponse modelToResponse(Word model) {
-        return model == null ? null : mapper.map(model, WordResponse.class);
+    public WordResponse mapResponse(Word source) {
+        return source == null ? null : mapper.map(source, WordResponse.class);
     }
 
-    public List<WordResponse> modelsToResponses(List<Word> models) {
-        if (models == null) {
+    public List<WordResponse> mapListResponse(List<Word> source) {
+        if (source == null) {
             return Collections.emptyList();
         } else {
-            return models.stream()
+            return source.stream()
                     .map(o -> mapper.map(o, WordResponse.class))
                     .collect(Collectors.toList());
         }
     }
 
-    public PageResponse<WordResponse> pageToPageResponse(Page<Word> page) {
-        if (page == null) {
+    public PageResponse<WordResponse> mapPage(Page<Word> source) {
+        if (source == null) {
             return new PageResponse<>();
         } else {
             return new PageResponse<>(
-                    page.getTotalPages(),
-                    page.getTotalElements(),
-                    page.get()
-                            .map(this::modelToResponse)
+                    source.getTotalPages(),
+                    source.getTotalElements(),
+                    source.get()
+                            .map(this::mapResponse)
                             .collect(Collectors.toList())
             );
         }

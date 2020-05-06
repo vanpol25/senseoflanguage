@@ -1,38 +1,51 @@
 package com.senseoflanguage.service.impl;
 
 import com.senseoflanguage.dao.WordRepository;
+import com.senseoflanguage.exception.HttpOkException;
 import com.senseoflanguage.exception.ModelNotFoundException;
 import com.senseoflanguage.model.Word;
 import com.senseoflanguage.service.WordDefinition;
 import com.senseoflanguage.service.WordService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class WordServiceImpl implements WordService {
 
-    private WordRepository wordRepository;
-    private WordDefinition wordDefinition;
+    private final WordRepository wordRepository;
+    private final WordDefinition wordsApiDefinition;
 
     @Autowired
     public WordServiceImpl(WordRepository wordRepository,
-                           WordDefinition wordDefinition) {
+                           @Qualifier("wordsApi") WordDefinition wordsApiDefinition) {
         this.wordRepository = wordRepository;
-        this.wordDefinition = wordDefinition;
+        this.wordsApiDefinition = wordsApiDefinition;
     }
 
     @Override
-    public Word save(Word word) {
+    public Word create(Word word) {
+        try {
+            word = wordsApiDefinition.addDefinition(word);
+        } catch (IOException e) {
+            throw new HttpOkException(e.getMessage());
+        }
         return wordRepository.save(word);
     }
 
     @Override
-    public List<Word> saveAll(List<Word> requests) {
+    public Word update(Word word) {
+        return wordRepository.save(word);
+    }
+
+    @Override
+    public List<Word> createAll(List<Word> requests) {
         return wordRepository.saveAll(requests);
     }
 

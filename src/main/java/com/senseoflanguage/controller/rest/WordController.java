@@ -28,9 +28,9 @@ import java.util.List;
 @RequestMapping("/words")
 public class WordController {
 
-    private WordService wordService;
-    private WordMapper wordMapper;
-    private WordTransfer wordTransfer;
+    private final WordService wordService;
+    private final WordMapper wordMapper;
+    private final WordTransfer wordTransfer;
 
     @Autowired
     public WordController(WordService wordService,
@@ -47,11 +47,84 @@ public class WordController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public Response<WordResponse> save(@Valid @RequestBody WordRequest wordRequest, @RequestParam("collection") String collection) {
-        Word request = wordMapper.requestToModel(wordRequest);
+    public Response<WordResponse> save(@Valid @RequestBody WordRequest wordRequest,
+                                       @RequestParam("collection") String collection) {
+        Word request = wordMapper.map(wordRequest);
         request.setCollection(collection);
-        Word word = wordService.save(request);
-        WordResponse wordResponse = wordMapper.modelToResponse(word);
+        Word word = wordService.create(request);
+        WordResponse wordResponse = wordMapper.mapResponse(word);
+
+        return new Response<>(HttpStatus.OK, wordResponse);
+    }
+
+    @ApiOperation(value = "Save model \"word\"")
+    @RequestMapping(
+            value = "/{id}",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public Response<WordResponse> update(@Valid @RequestBody WordRequest wordRequest,
+                                         @PathVariable("id") String id,
+                                         @RequestParam("collection") String collection) {
+        Word request = wordMapper.map(wordRequest);
+        request.setId(id);
+        request.setCollection(collection);
+        Word word = wordService.update(request);
+        WordResponse wordResponse = wordMapper.mapResponse(word);
+
+        return new Response<>(HttpStatus.OK, wordResponse);
+    }
+
+    @ApiOperation(value = "Delete model \"word\" by id")
+    @RequestMapping(
+            value = "/{id}",
+            method = RequestMethod.DELETE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public Response<WordResponse> delete(@PathVariable("id") String id) {
+        Word word = wordService.delete(id);
+        WordResponse wordResponse = wordMapper.mapResponse(word);
+
+        return new Response<>(HttpStatus.OK, wordResponse);
+    }
+
+    @ApiOperation(value = "Find model \"word\" by id")
+    @RequestMapping(
+            value = "/{id}",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public Response<WordResponse> read(@PathVariable("id") String id) {
+        Word word = wordService.findById(id);
+        WordResponse wordResponse = wordMapper.mapResponse(word);
+
+        return new Response<>(HttpStatus.OK, wordResponse);
+    }
+
+    @ApiOperation(value = "Find model \"word\" by name")
+    @RequestMapping(
+            value = "/name/{name}",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public Response<WordResponse> readByName(@PathVariable("name") String name) {
+        Word word = wordService.findByName(name);
+        WordResponse wordResponse = wordMapper.mapResponse(word);
+
+        return new Response<>(HttpStatus.OK, wordResponse);
+    }
+
+    @ApiOperation(value = "Delete models \"word\" by body")
+    @RequestMapping(
+            method = RequestMethod.DELETE,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public Response<WordResponse> deleteByBody(@Valid @RequestBody WordRequest wordRequest) {
+        Word request = wordMapper.map(wordRequest);
+        Word word = wordService.delete(request);
+        WordResponse wordResponse = wordMapper.mapResponse(word);
 
         return new Response<>(HttpStatus.OK, wordResponse);
     }
@@ -70,37 +143,10 @@ public class WordController {
             word.setCollection(collection);
             requests.add(word);
         }
-        List<Word> words = wordService.saveAll(requests);
-        List<WordResponse> wordResponses = wordMapper.modelsToResponses(words);
+        List<Word> words = wordService.createAll(requests);
+        List<WordResponse> wordResponses = wordMapper.mapListResponse(words);
 
         return new Response<>(HttpStatus.OK, wordResponses);
-    }
-
-    @ApiOperation(value = "Delete model \"word\" by id")
-    @RequestMapping(
-            value = "/{id}",
-            method = RequestMethod.DELETE,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public Response<WordResponse> delete(@PathVariable("id") String id) {
-        Word word = wordService.delete(id);
-        WordResponse wordResponse = wordMapper.modelToResponse(word);
-
-        return new Response<>(HttpStatus.OK, wordResponse);
-    }
-
-    @ApiOperation(value = "Delete models \"word\" by body")
-    @RequestMapping(
-            method = RequestMethod.DELETE,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public Response<WordResponse> deleteByBody(@Valid @RequestBody WordRequest wordRequest) {
-        Word request = wordMapper.requestToModel(wordRequest);
-        Word word = wordService.delete(request);
-        WordResponse wordResponse = wordMapper.modelToResponse(word);
-
-        return new Response<>(HttpStatus.OK, wordResponse);
     }
 
     @ApiOperation(value = "Delete models \"word\" by body")
@@ -111,37 +157,11 @@ public class WordController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public Response<List<WordResponse>> deleteAllByBody(@RequestBody List<WordRequest> wordRequests) {
-        List<Word> requests = wordMapper.requestsToModels(wordRequests);
+        List<Word> requests = wordMapper.mapList(wordRequests);
         List<Word> words = wordService.deleteAllByBody(requests);
-        List<WordResponse> wordResponses = wordMapper.modelsToResponses(words);
+        List<WordResponse> wordResponses = wordMapper.mapListResponse(words);
 
         return new Response<>(HttpStatus.OK, wordResponses);
-    }
-
-    @ApiOperation(value = "Find model \"word\" by id")
-    @RequestMapping(
-            value = "/{id}",
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public Response<WordResponse> read(@PathVariable("id") String id) {
-        Word word = wordService.findById(id);
-        WordResponse wordResponse = wordMapper.modelToResponse(word);
-
-        return new Response<>(HttpStatus.OK, wordResponse);
-    }
-
-    @ApiOperation(value = "Find model \"word\" by name")
-    @RequestMapping(
-            value = "/name/{name}",
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public Response<WordResponse> readByName(@PathVariable("name") String name) {
-        Word word = wordService.findByName(name);
-        WordResponse wordResponse = wordMapper.modelToResponse(word);
-
-        return new Response<>(HttpStatus.OK, wordResponse);
     }
 
     @ApiOperation(value = "Find all models \"word\"")
@@ -151,7 +171,7 @@ public class WordController {
     )
     public Response<PageResponse<WordResponse>> readAll(@Valid PaginationRequest paginationRequest) {
         Page<Word> page = wordService.findAll(paginationRequest.toPageable());
-        PageResponse<WordResponse> pageResponse = wordMapper.pageToPageResponse(page);
+        PageResponse<WordResponse> pageResponse = wordMapper.mapPage(page);
 
         return new Response<>(HttpStatus.OK, pageResponse);
     }
