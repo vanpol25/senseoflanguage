@@ -1,31 +1,45 @@
 {
-  "_id": {
-    "$oid": "5eb1f5c5adea7960be1f1ae1"
-  },
-  "eng": "string",
-  "ukr": "string",
-  "translit": "string",
-  "frequency": "0",
-  "collection": "2",
-  "results": [
-    {
-      "definition": "string",
-      "partOfSpeech": "string",
-      "synonyms": [
-        "string"
-      ],
-      "antonyms": [],
-      "typeOf": [
-        "string"
-      ],
-      "hasTypes": [
-        "string"
-      ],
-      "similarTo": [],
-      "examples": [
-        "string"
-      ]
-    }
-  ],
-  "_class": "com.senseoflanguage.model.Word"
-},
+  "eng": "situation",
+  "ukr": "ситуація",
+  "translit": "[sɪtjʊˈeɪʃ(ə)n] ситюе йшн",
+  "meaning": {
+    "noun": [
+      {
+        "definition": "A set of circumstances in which one finds oneself; a state of affairs.",
+        "example": "the situation between her and Jake had come to a head",
+        "synonyms": [
+          "circumstances",
+          "set of circumstances",
+          "state of affairs",
+          "affairs",
+          "state",
+          "condition",
+          "case"
+        ]
+      },
+      {
+        "definition": "The location and surroundings of a place.",
+        "example": "the situation of the town is pleasant",
+        "synonyms": [
+          "emergency",
+          "emergency situation",
+          "urgent situation",
+          "crisis",
+          "potential crisis"
+        ]
+      },
+      {
+        "definition": "A position of employment; a job.",
+        "example": null,
+        "synonyms": [
+          "job",
+          "day job",
+          "post",
+          "position",
+          "place",
+          "appointment"
+        ]
+      }
+    ]
+  }
+}

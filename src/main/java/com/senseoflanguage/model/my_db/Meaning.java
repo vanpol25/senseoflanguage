@@ -9,8 +9,8 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
-@ToString
+//@EqualsAndHashCode
+//@ToString
 public class Meaning implements Serializable {
 
     private String definition;

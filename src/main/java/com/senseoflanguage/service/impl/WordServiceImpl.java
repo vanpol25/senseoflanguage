@@ -1,7 +1,7 @@
 package com.senseoflanguage.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.senseoflanguage.dao.WordRepository;
-import com.senseoflanguage.exception.HttpOkException;
 import com.senseoflanguage.exception.ModelNotFoundException;
 import com.senseoflanguage.model.Word;
 import com.senseoflanguage.service.WordDefinition;
@@ -10,8 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.util.BsonUtils;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,11 +33,7 @@ public class WordServiceImpl implements WordService {
 
     @Override
     public Word create(Word word) {
-        try {
-            word = wordsApiDefinition.addDefinition(word);
-        } catch (IOException e) {
-            throw new HttpOkException(e.getMessage());
-        }
+        wordsApiDefinition.addDefinition(word);
         return wordRepository.save(word);
     }
 
@@ -45,8 +43,45 @@ public class WordServiceImpl implements WordService {
     }
 
     @Override
-    public List<Word> createAll(List<Word> requests) {
-        return wordRepository.saveAll(requests);
+    public List<Word> createAll(List<Word> requests, String collection) {
+        int percentage = 0;
+        int progress = 0;
+
+        for (Word word : requests) {
+            progress++;
+            try {
+                wordsApiDefinition.addDefinition(word);
+            } catch (Exception e) {
+                System.out.println("Def,Error - " + word.getEng());
+            }
+//            try {
+//                wordRepository.save(word);
+//            } catch (StackOverflowError e) {
+//                System.out.println("Mongo,Error - " + word.getEng());
+//            }
+            if (progress % 5 == 0) {
+                System.out.println(percentage++ + "%");
+            }
+        }
+
+        saveToFile(requests, collection);
+
+        return requests;
+    }
+
+    @Override
+    public List<Word> createAll(List<Word> words) {
+        return wordRepository.saveAll(words);
+    }
+
+    private void saveToFile(List<Word> requests, String collection) {
+        File file = new File("E:\\" + collection + ".json");
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            objectMapper.writeValue(file, requests);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

@@ -15,7 +15,6 @@ public class WordRequest {
     private String eng;
     private String ukr;
     private String translit;
-    private BigDecimal frequency;
     private List<DefinitionRequest> results;
 
 }

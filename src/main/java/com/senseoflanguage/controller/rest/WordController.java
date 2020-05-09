@@ -6,9 +6,9 @@ import com.senseoflanguage.dto.response.PageResponse;
 import com.senseoflanguage.dto.response.WordResponse;
 import com.senseoflanguage.mapper.WordMapper;
 import com.senseoflanguage.model.Word;
+import com.senseoflanguage.model.enums.CollectionType;
 import com.senseoflanguage.model.my_db.MainText;
 import com.senseoflanguage.service.WordService;
-import com.senseoflanguage.transfer.WordTransfer;
 import com.senseoflanguage.util.Response;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,34 +31,31 @@ public class WordController {
 
     private final WordService wordService;
     private final WordMapper wordMapper;
-    private final WordTransfer wordTransfer;
 
     @Autowired
     public WordController(WordService wordService,
-                          WordMapper wordMapper,
-                          WordTransfer wordTransfer) {
+                          WordMapper wordMapper) {
         this.wordService = wordService;
         this.wordMapper = wordMapper;
-        this.wordTransfer = wordTransfer;
     }
 
-    @ApiOperation(value = "Save model \"word\"")
+    @ApiOperation(value = "Create model \"word\"")
     @RequestMapping(
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public Response<WordResponse> save(@Valid @RequestBody WordRequest wordRequest,
-                                       @RequestParam("collection") String collection) {
+    public Response<WordResponse> Create(@Valid @RequestBody MainText wordRequest,
+                                       @NotBlank @RequestParam("collection") CollectionType collection) {
         Word request = wordMapper.map(wordRequest);
-        request.setCollection(collection);
+        request.getCollections().add(collection);
         Word word = wordService.create(request);
         WordResponse wordResponse = wordMapper.mapResponse(word);
 
         return new Response<>(HttpStatus.OK, wordResponse);
     }
 
-    @ApiOperation(value = "Save model \"word\"")
+    @ApiOperation(value = "Update model \"word\"")
     @RequestMapping(
             value = "/{id}",
             method = RequestMethod.PUT,
@@ -66,10 +64,10 @@ public class WordController {
     )
     public Response<WordResponse> update(@Valid @RequestBody WordRequest wordRequest,
                                          @PathVariable("id") String id,
-                                         @RequestParam("collection") String collection) {
+                                         @RequestParam("collection") CollectionType collection) {
         Word request = wordMapper.map(wordRequest);
         request.setId(id);
-        request.setCollection(collection);
+        request.getCollections().add(collection);
         Word word = wordService.update(request);
         WordResponse wordResponse = wordMapper.mapResponse(word);
 
@@ -129,24 +127,38 @@ public class WordController {
         return new Response<>(HttpStatus.OK, wordResponse);
     }
 
-    @ApiOperation(value = "Save models \"word\"")
+    @ApiOperation(value = "Create models \"word\"")
     @RequestMapping(
             value = "/all",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public Response<List<WordResponse>> saveAll(@RequestBody List<@Valid MainText> wordRequests, @RequestParam("collection") String collection) {
+    public Response<List<WordResponse>> createAll(@RequestBody List<@Valid MainText> wordRequests, @RequestParam("collection") CollectionType collection) {
         List<Word> requests = new ArrayList<>();
         for (MainText mainText : wordRequests) {
-            Word word = wordTransfer.addMyDB(mainText);
-            word.setCollection(collection);
+            Word word = wordMapper.map(mainText);
+            word.getCollections().add(collection);
             requests.add(word);
+            //While testing
+            System.out.println(word.getEng());
         }
-        List<Word> words = wordService.createAll(requests);
+        List<Word> words = wordService.createAll(requests, collection.name());
         List<WordResponse> wordResponses = wordMapper.mapListResponse(words);
 
         return new Response<>(HttpStatus.OK, wordResponses);
+    }
+
+    @ApiOperation(value = "Create models \"word\"")
+    @RequestMapping(
+            value = "/all/json",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public Response<List<WordResponse>> createAll(@RequestBody List<Word> words) {
+        List<Word> all = wordService.createAll(words);
+        return new Response<>(HttpStatus.OK, wordMapper.mapListResponse(all));
     }
 
     @ApiOperation(value = "Delete models \"word\" by body")

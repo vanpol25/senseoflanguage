@@ -1,13 +1,12 @@
 package com.senseoflanguage.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.senseoflanguage.exception.ModelNotFoundException;
 import com.senseoflanguage.mapper.WordMapper;
 import com.senseoflanguage.model.Word;
 import com.senseoflanguage.model.words_api.WordWordsApi;
 import com.senseoflanguage.service.WordDefinition;
-import com.senseoflanguage.util.constants.ExceptionMessagesConst;
 import com.senseoflanguage.util.constants.WordsApiConst;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -36,20 +35,21 @@ public class WordsApiDefinitionImpl implements WordDefinition {
     }
 
     @Override
-    public Word addDefinition(Word word) throws IOException {
-        if (word == null) {
-            throw new ModelNotFoundException(ExceptionMessagesConst.MODEL_IS_NULL_BEFORE_WORDS_API_SEARCH);
-        } else if (word.getEng() == null) {
-            throw new ModelNotFoundException(ExceptionMessagesConst.MODEL_FIELD_ENG_IS_NULL_BEFORE_WORDS_API_SEARCH);
+    public Word addDefinition(Word word) {
+        if (word.getEng() == null) {
+            return word;
         }
 
-        String json = callWordsApi(word.getEng());
+        String json = callWordsApi(word.getEng().split(" ")[0]);
+        if (json == null) {
+            return word;
+        }
         WordWordsApi wordWordsApi = jsonToObj(json);
 
         return wordMapper.map(wordWordsApi, word);
     }
 
-    private String callWordsApi(String word) throws IOException {
+    private String callWordsApi(String word) {
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
@@ -59,14 +59,38 @@ public class WordsApiDefinitionImpl implements WordDefinition {
                 .addHeader(WordsApiConst.KEY_WORDS_API_CONSTANT, key)
                 .build();
 
-        Response response = client.newCall(request).execute();
-        return response.body().string();
+        Response response;
+        String json;
+        try {
+            response = client.newCall(request).execute();
+            json = response.body().string();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        if (response.code() != 200) {
+            System.out.println("In words api definition error. Status code=" + response.code());
+            return null;
+        }
+
+        return json;
     }
 
-    private WordWordsApi jsonToObj(String json) throws IOException {
+    private WordWordsApi jsonToObj(String json) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return objectMapper.readValue(json, WordWordsApi.class);
+        WordWordsApi wordWordsApi;
+        try {
+            wordWordsApi = objectMapper.readValue(json, WordWordsApi.class);
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace();
+//            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return wordWordsApi;
     }
 
 }

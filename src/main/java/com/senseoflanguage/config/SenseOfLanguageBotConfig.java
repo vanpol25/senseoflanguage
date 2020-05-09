@@ -16,7 +16,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.Collections;
 
 @Component
-@Slf4j
 public class SenseOfLanguageBotConfig extends TelegramLongPollingBot {
 
     @Autowired
@@ -29,7 +28,6 @@ public class SenseOfLanguageBotConfig extends TelegramLongPollingBot {
     private String name;
 
     @Bean
-//    @Scope(value = "prototype")
     public ReplyKeyboardMarkup getReplyKeyboardMarkup() {
         KeyboardRow keyboardRow = new KeyboardRow();
         keyboardRow.add("Easy");
@@ -46,7 +44,6 @@ public class SenseOfLanguageBotConfig extends TelegramLongPollingBot {
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
-            log.info(e.getMessage());
             e.printStackTrace();
         }
     }

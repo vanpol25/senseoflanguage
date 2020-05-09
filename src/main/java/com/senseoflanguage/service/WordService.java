@@ -10,6 +10,8 @@ public interface WordService {
 
     Word create(Word word);
 
+    List<Word> createAll(List<Word> words);
+
     Word delete(String id);
 
     Word delete(Word word);
@@ -18,7 +20,7 @@ public interface WordService {
 
     Page<Word> findAll(Pageable pageable);
 
-    List<Word> createAll(List<Word> requests);
+    List<Word> createAll(List<Word> requests, String collection);
 
     List<Word> deleteAllByBody(List<Word> requests);
 

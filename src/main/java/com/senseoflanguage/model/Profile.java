@@ -3,6 +3,7 @@ package com.senseoflanguage.model;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.telegram.telegrambots.meta.api.objects.User;
 
 import java.io.Serializable;
 import java.util.HashSet;

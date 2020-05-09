@@ -3,7 +3,10 @@ package com.senseoflanguage.mapper;
 import com.senseoflanguage.dto.request.WordRequest;
 import com.senseoflanguage.dto.response.PageResponse;
 import com.senseoflanguage.dto.response.WordResponse;
+import com.senseoflanguage.model.Definition;
 import com.senseoflanguage.model.Word;
+import com.senseoflanguage.model.my_db.MainText;
+import com.senseoflanguage.model.my_db.Meaning;
 import com.senseoflanguage.model.words_api.DefinitionWordsApi;
 import com.senseoflanguage.model.words_api.WordWordsApi;
 import org.dozer.DozerBeanMapper;
@@ -11,8 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -53,12 +55,38 @@ public class WordMapper {
         } else if (destination == null) {
             return null;
         } else {
+            if (destination.getResults() == null) {
+                destination.setResults(new HashSet<>());
+            }
             for (DefinitionWordsApi definition : source.getResults()) {
                 destination.getResults().add(definitionMapper.map(definition));
             }
             destination.setFrequency(source.getFrequency());
             return destination;
         }
+    }
+
+    public Word map(MainText mainText) {
+        return new Word() {{
+            setEng(mainText.getEng());
+            setUkr(mainText.getUkr());
+            setTranslit(mainText.getTranslit());
+
+            Set<Map.Entry<String, List<Meaning>>> entries = mainText.getMeaning().entrySet();
+
+            for (Map.Entry<String, List<Meaning>> entry : entries) {
+                for (Meaning meaning : entry.getValue()) {
+                    getResults().add(new Definition() {{
+                        setPartOfSpeech(entry.getKey());
+                        setDefinition(meaning.getDefinition());
+                        getExamples().add(meaning.getExample());
+                        if (meaning.getSynonyms() != null) {
+                            getSynonyms().addAll(meaning.getSynonyms());
+                        }
+                    }});
+                }
+            }
+        }};
     }
 
     public List<Word> mapList(List<WordRequest> source) {
