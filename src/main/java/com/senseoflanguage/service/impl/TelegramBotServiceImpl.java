@@ -1,35 +1,68 @@
 package com.senseoflanguage.service.impl;
 
+import com.senseoflanguage.config.SenseOfLanguageBotConfig;
+import com.senseoflanguage.dao.ProfileRepository;
+import com.senseoflanguage.mapper.ProfileMapper;
+import com.senseoflanguage.model.Profile;
+import com.senseoflanguage.service.ProfileService;
 import com.senseoflanguage.service.TelegramBotService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
-
-import java.util.Collections;
 
 @Service
 public class TelegramBotServiceImpl implements TelegramBotService {
 
-    private final ReplyKeyboardMarkup replyKeyboardMarkup;
+    private final ProfileRepository profileRepository;
+    private final ProfileMapper profileMapper;
+    private final ProfileService profileService;
+    private final SenseOfLanguageBotConfig senseOfLanguageBotConfig;
 
     @Autowired
-    public TelegramBotServiceImpl(ReplyKeyboardMarkup replyKeyboardMarkup) {
-        this.replyKeyboardMarkup = replyKeyboardMarkup;
+    public TelegramBotServiceImpl(ProfileRepository profileRepository,
+                                  ProfileMapper profileMapper,
+                                  ProfileService profileService, SenseOfLanguageBotConfig senseOfLanguageBotConfig) {
+        this.profileRepository = profileRepository;
+        this.profileMapper = profileMapper;
+        this.profileService = profileService;
+        this.senseOfLanguageBotConfig = senseOfLanguageBotConfig;
     }
 
     @Override
-    public SendMessage update(Update update) {
-        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId(), "Hi!");
-        sendMessage.setReplyMarkup(this.replyKeyboardMarkup);
-        return sendMessage;
+    public void onCommandReceived(Update update) {
+        User user = update.getMessage().getFrom();
+        Profile profile = profileRepository.findById(user.getId().toString())
+                .orElse(profileService.save(user));
+
+
+
+    }
+
+    @Override
+    public void onMessageReceived(Update update) {
+
+    }
+
+    private SendMessage parseMessage(Update update) {
+        User user = update.getMessage().getFrom();
+        Profile profile = profileRepository.findById(user.getId().toString())
+                .orElse(profileService.save(user));
+        logicMessage(update);
+
+        return null;
+    }
+
+    private void logicMessage(Update update) {
+        if (update.getCallbackQuery().getData().equals("/start")) {
+
+        }
+    }
+
+    private SendMessage commandQuery(Update update) {
+
+        return null;
     }
 
 }

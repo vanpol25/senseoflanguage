@@ -1,19 +1,21 @@
 package com.senseoflanguage.config;
 
 import com.senseoflanguage.controller.telegram.SenseOfLanguageBot;
-import lombok.extern.slf4j.Slf4j;
+import com.senseoflanguage.model.enums.TelegramCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiValidationException;
 
-import java.util.Collections;
+import java.io.Serializable;
+import java.lang.reflect.Method;
 
 @Component
 public class SenseOfLanguageBotConfig extends TelegramLongPollingBot {
@@ -27,24 +29,12 @@ public class SenseOfLanguageBotConfig extends TelegramLongPollingBot {
     @Value("${telegram.name}")
     private String name;
 
-    @Bean
-    public ReplyKeyboardMarkup getReplyKeyboardMarkup() {
-        KeyboardRow keyboardRow = new KeyboardRow();
-        keyboardRow.add("Easy");
-        keyboardRow.add("Middle");
-        keyboardRow.add("Hard");
-        return new ReplyKeyboardMarkup()
-                .setResizeKeyboard(true)
-                .setKeyboard(Collections.singletonList(keyboardRow));
-    }
-
     @Override
     public void onUpdateReceived(Update update) {
-        SendMessage sendMessage = senseOfLanguageBot.onUpdateReceived(update);
-        try {
-            execute(sendMessage);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
+        if (update.hasCallbackQuery() && TelegramCommand.hasCommand(update.getCallbackQuery().getData())) {
+            senseOfLanguageBot.onCommandReceived(update);
+        } else if (update.hasMessage() && TelegramCommand.hasText(update.getMessage().getText())) {
+            senseOfLanguageBot.onMessageReceived(update);
         }
     }
 

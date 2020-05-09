@@ -11,7 +11,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode(of = {"definition", "partOfSpeech"})
+@EqualsAndHashCode(of = {"definition", "partOfSpeech", "synonyms", "examples"})
 @ToString
 public class Definition implements Serializable {
 

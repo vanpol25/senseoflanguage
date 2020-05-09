@@ -1,5 +1,6 @@
 package com.senseoflanguage.model;
 
+import com.senseoflanguage.model.enums.CollectionType;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -23,5 +24,7 @@ public class Profile implements Serializable {
     private String lastName;
     private String userName;
     private Set<Collection> collections = new HashSet<>();
+    private CollectionType currentCollectionName;
+    private String currentWordId;
 
 }
