@@ -22,7 +22,7 @@ public class Profile implements Serializable {
     private String firstName;
     private String lastName;
     private String userName;
-    private Set<Collection> collections = new HashSet<>();
+    private Set<String> collections = new HashSet<>();
     private CollectionType currentCollection;
     private String currentWordId;
 

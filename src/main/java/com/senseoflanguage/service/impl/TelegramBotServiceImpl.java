@@ -8,10 +8,7 @@ import com.senseoflanguage.model.Word;
 import com.senseoflanguage.model.WordInfo;
 import com.senseoflanguage.model.enums.CollectionType;
 import com.senseoflanguage.model.enums.WordState;
-import com.senseoflanguage.service.ProfileService;
-import com.senseoflanguage.service.ResponseExecutor;
-import com.senseoflanguage.service.TelegramBotService;
-import com.senseoflanguage.service.WordService;
+import com.senseoflanguage.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -26,16 +23,19 @@ public class TelegramBotServiceImpl implements TelegramBotService {
 
     private final ProfileService profileService;
     private final WordService wordService;
+    private final CollectionService collectionService;
     private final ProfileMapper profileMapper;
     private final ResponseExecutor responseExecutor;
 
     @Autowired
     public TelegramBotServiceImpl(ProfileService profileService,
                                   WordService wordService,
+                                  CollectionService collectionService,
                                   ProfileMapper profileMapper,
                                   ResponseExecutor responseExecutor) {
         this.profileService = profileService;
         this.wordService = wordService;
+        this.collectionService = collectionService;
         this.profileMapper = profileMapper;
         this.responseExecutor = responseExecutor;
     }
@@ -66,8 +66,10 @@ public class TelegramBotServiceImpl implements TelegramBotService {
     @Override
     public void loadCollection(Update update, CollectionType collectionType) {
         Profile profile = getProfile(update);
+        Set<String> collectionIds = profile.getCollections();
+        List<Collection> collections = collectionService.find(collectionIds);
 
-        Optional<Collection> collectionOptional = profile.getCollections().stream()
+        Optional<Collection> collectionOptional = collections.stream()
                 .filter(c -> c.getName().equals(collectionType))
                 .findFirst();
 
@@ -90,7 +92,8 @@ public class TelegramBotServiceImpl implements TelegramBotService {
                     }});
                 }
             }};
-            profile.getCollections().add(newCollection);
+            collectionService.create(newCollection);
+            profile.getCollections().add(newCollection.getId());
             loadNextWord(newCollection, profile, update, collectionType);
         }
     }
@@ -133,9 +136,12 @@ public class TelegramBotServiceImpl implements TelegramBotService {
             return;
         }
 
-        Optional<Collection> collectionOptional = profile.getCollections().stream()
+        Set<String> collectionIds = profile.getCollections();
+        List<Collection> collections = collectionService.find(collectionIds);
+        Optional<Collection> collectionOptional = collections.stream()
                 .filter(c -> c.getName().equals(currentCollectionType))
                 .findFirst();
+
         Collection collection;
         if (collectionOptional.isPresent()) {
             collection = collectionOptional.get();
@@ -152,7 +158,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
             WordInfo wordInfo = wordInfoOptional.get();
             wordInfo.setTimesToSolve(Optional.of(wordInfo.getTimesToSolve()).orElse(0) + 1);
             wordInfo.setWordState(wordState);
-            profileService.update(profile);
+            collectionService.update(collection);
         } else {
             loadCollection(update, currentCollectionType);
             return;
@@ -202,9 +208,13 @@ public class TelegramBotServiceImpl implements TelegramBotService {
         Profile profile = getProfile(update);
         CollectionType currentCollection = profile.getCurrentCollection();
         if (currentCollection != null) {
-            Optional<Collection> collectionOptional = profile.getCollections().stream()
+            Set<String> collectionIds = profile.getCollections();
+            List<Collection> collections = collectionService.find(collectionIds);
+
+            Optional<Collection> collectionOptional = collections.stream()
                     .filter(c -> c.getName().equals(currentCollection))
                     .findFirst();
+
             if (collectionOptional.isPresent()) {
                 Collection collection = collectionOptional.get();
                 responseExecutor.showStatistic(update, collection);
