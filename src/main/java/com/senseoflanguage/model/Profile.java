@@ -4,7 +4,6 @@ import com.senseoflanguage.model.enums.CollectionType;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.telegram.telegrambots.meta.api.objects.User;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -24,7 +23,7 @@ public class Profile implements Serializable {
     private String lastName;
     private String userName;
     private Set<Collection> collections = new HashSet<>();
-    private CollectionType currentCollectionName;
+    private CollectionType currentCollection;
     private String currentWordId;
 
 }

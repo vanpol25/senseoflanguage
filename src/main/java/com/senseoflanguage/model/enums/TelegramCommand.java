@@ -5,17 +5,22 @@ import java.util.Map;
 
 public enum TelegramCommand {
 
-    SHOW("Show", "/show"),
-    IS_NO_LAST("Next word ->", "/next"),
-    IS_LAST("Congratulations!", "/last"),
+    START("Start", "/start"),
+    SHOW_ANSWER("Show", "/show"),
     EASY("Easy", "/easy"),
     MEDIUM("Medium", "/medium"),
     HARD("Hard", "/hard"),
     EXAMPLES("Examples", "examples"),
     DETAILS("Details", "/details"),
     ALL_INFO("All info", "/all"),
-    MENU("Menu", "/menu"),
-    STATISTIC("Statistic", "/statistic");
+    CHOOSE_COLLECTION("Choose collection", "/choose"),
+    STATISTIC("Statistic", "/statistic"),
+    BASE1("Basic part 1", "/collection_base1"),
+    BASE2("Basic part 2", "/collection_base2"),
+    BASE3("Basic part 3", "/collection_base3"),
+    BASE4("Basic part 4", "/collection_base4"),
+    BASE5("Basic part 5", "/collection_base5"),
+    BASE6("Basic part 6", "/collection_base6");
 
     private final static Map<String, TelegramCommand> byText = new HashMap<>(TelegramCommand.values().length, 1);
     private final static Map<String, TelegramCommand> byCommand = new HashMap<>(TelegramCommand.values().length, 1);
@@ -51,20 +56,15 @@ public enum TelegramCommand {
         return byCommand.containsKey(command);
     }
 
-    public static TelegramCommand getByText(String text) {
-        TelegramCommand telegramCommand = byText.get(text);
-        if (telegramCommand == null) {
-            throw new IllegalArgumentException("Invalid text: " + text);
+    public static TelegramCommand getCommand(String command) {
+        TelegramCommand telegramCommand;
+        if ((telegramCommand = byText.get(command)) != null) {
+            return telegramCommand;
+        } else if ((telegramCommand = byCommand.get(command)) != null) {
+            return telegramCommand;
+        } else {
+            throw new IllegalArgumentException("Invalid command: " + command);
         }
-        return telegramCommand;
-    }
-
-    public static TelegramCommand getByCommand(String command) {
-        TelegramCommand telegramCommand = byCommand.get(command);
-        if (telegramCommand == null) {
-            throw new IllegalArgumentException("Invalid text: " + command);
-        }
-        return telegramCommand;
     }
 
 }

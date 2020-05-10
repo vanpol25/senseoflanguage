@@ -45,7 +45,7 @@ public class WordController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public Response<WordResponse> Create(@Valid @RequestBody MainText wordRequest,
+    public Response<WordResponse> Create(@Valid @RequestBody WordRequest wordRequest,
                                        @NotBlank @RequestParam("collection") CollectionType collection) {
         Word request = wordMapper.map(wordRequest);
         request.getCollections().add(collection);
@@ -186,6 +186,23 @@ public class WordController {
         PageResponse<WordResponse> pageResponse = wordMapper.mapPage(page);
 
         return new Response<>(HttpStatus.OK, pageResponse);
+    }
+
+    @ApiOperation(value = "Find all models \"word\"")
+    @RequestMapping(
+            value = "/testing",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public Response<PageResponse<WordResponse>> readAll() {
+        System.out.println("------------------------------");
+        System.out.println(Thread.currentThread().getName());
+        System.out.println(Thread.currentThread().toString());
+        System.out.println(Thread.currentThread().getId());
+        System.out.println("------------------------------");
+        Thread.currentThread().interrupt();
+
+        return null;
     }
 
 }

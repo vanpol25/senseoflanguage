@@ -70,7 +70,7 @@ public class WordsApiDefinitionImpl implements WordDefinition {
         }
 
         if (response.code() != 200) {
-            System.out.println("In words api definition error. Status code=" + response.code());
+            System.out.println("In words api definition error. Status code=" + response.code() + ". Word=" + word);
             return null;
         }
 
@@ -83,10 +83,7 @@ public class WordsApiDefinitionImpl implements WordDefinition {
         WordWordsApi wordWordsApi;
         try {
             wordWordsApi = objectMapper.readValue(json, WordWordsApi.class);
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//            return null;
-        } catch (IOException e) {
+        } catch (JsonProcessingException e) {
             e.printStackTrace();
             return null;
         }

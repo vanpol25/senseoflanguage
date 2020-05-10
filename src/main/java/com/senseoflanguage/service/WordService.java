@@ -1,6 +1,7 @@
 package com.senseoflanguage.service;
 
 import com.senseoflanguage.model.Word;
+import com.senseoflanguage.model.enums.CollectionType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -17,6 +18,8 @@ public interface WordService {
     Word delete(Word word);
 
     Word findById(String id);
+
+    List<Word> findAllByCollections(CollectionType collection);
 
     Page<Word> findAll(Pageable pageable);
 

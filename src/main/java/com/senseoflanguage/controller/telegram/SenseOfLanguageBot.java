@@ -1,13 +1,10 @@
 package com.senseoflanguage.controller.telegram;
 
+import com.senseoflanguage.model.enums.CollectionType;
+import com.senseoflanguage.model.enums.WordState;
 import com.senseoflanguage.service.TelegramBotService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
@@ -20,12 +17,40 @@ public class SenseOfLanguageBot {
         this.telegramBotService = telegramBotService;
     }
 
-    public void onCommandReceived(Update update) {
-        telegramBotService.onCommandReceived(update);
+    public void start(Update update) {
+        telegramBotService.start(update);
     }
 
-
-    public void onMessageReceived(Update update) {
-        telegramBotService.onMessageReceived(update);
+    public void chooseCollection(Update update) {
+        telegramBotService.chooseCollection(update);
     }
+
+    public void loadCollection(Update update, CollectionType collectionType) {
+        telegramBotService.loadCollection(update, collectionType);
+    }
+
+    public void show(Update update) {
+        telegramBotService.show(update);
+    }
+
+    public void chooseDifficult(Update update, WordState wordState) {
+        telegramBotService.chooseDifficult(update, wordState);
+    }
+
+    public void showExamples(Update update) {
+        telegramBotService.showExamples(update);
+    }
+
+    public void showDetails(Update update) {
+        telegramBotService.showDetails(update);
+    }
+
+    public void showAllInfo(Update update) {
+        telegramBotService.showAllInfo(update);
+    }
+
+    public void showStatistic(Update update) {
+        telegramBotService.showStatistic(update);
+    }
+
 }

@@ -10,8 +10,8 @@ import java.util.Map;
 @NoArgsConstructor
 @Getter
 @Setter
-//@EqualsAndHashCode
-//@ToString
+@EqualsAndHashCode
+@ToString
 public class MainText implements Serializable {
 
     private String eng;

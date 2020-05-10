@@ -62,6 +62,9 @@ public class WordMapper {
                 destination.getResults().add(definitionMapper.map(definition));
             }
             destination.setFrequency(source.getFrequency());
+            if (destination.getTranslit() == null) {
+                destination.setTranslit(source.getPronunciation().getAll());
+            }
             return destination;
         }
     }

@@ -1,5 +1,6 @@
 package com.senseoflanguage.model;
 
+import com.senseoflanguage.model.enums.CollectionType;
 import lombok.*;
 
 import java.io.Serializable;
@@ -13,7 +14,7 @@ import java.util.Set;
 @ToString
 public class Collection implements Serializable {
 
-    private String name;
+    private CollectionType name;
     private Set<WordInfo> words = new HashSet<>();
 
 }

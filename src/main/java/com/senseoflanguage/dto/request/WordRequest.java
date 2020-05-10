@@ -2,8 +2,8 @@ package com.senseoflanguage.dto.request;
 
 import lombok.*;
 
-import java.math.BigDecimal;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @NoArgsConstructor
 @Getter
@@ -15,6 +15,6 @@ public class WordRequest {
     private String eng;
     private String ukr;
     private String translit;
-    private List<DefinitionRequest> results;
+    private Set<DefinitionRequest> results = new HashSet<>();
 
 }

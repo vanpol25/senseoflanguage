@@ -4,13 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.senseoflanguage.dao.WordRepository;
 import com.senseoflanguage.exception.ModelNotFoundException;
 import com.senseoflanguage.model.Word;
+import com.senseoflanguage.model.enums.CollectionType;
 import com.senseoflanguage.service.WordDefinition;
 import com.senseoflanguage.service.WordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.util.BsonUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -116,6 +116,11 @@ public class WordServiceImpl implements WordService {
     public Word findByName(String name) {
         return wordRepository.findByEng(name)
                 .orElseThrow(() -> new ModelNotFoundException(String.format("Could not find word with name = '%s'!", name)));
+    }
+
+    @Override
+    public List<Word> findAllByCollections(CollectionType collection) {
+        return wordRepository.findAllByCollections(collection);
     }
 
     @Override

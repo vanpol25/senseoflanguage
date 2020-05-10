@@ -2,6 +2,6 @@ package com.senseoflanguage.model.enums;
 
 public enum  WordState {
 
-    NOT_TEACH, STUDIED, NOT_FULL_STUDIED, NOT_STUDIED
+    DO_NOT_KNOW, DO_NOT_FULL_KNOW, KNOW
 
 }
