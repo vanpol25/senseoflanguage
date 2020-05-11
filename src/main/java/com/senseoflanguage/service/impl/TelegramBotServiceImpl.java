@@ -1,6 +1,5 @@
 package com.senseoflanguage.service.impl;
 
-import com.senseoflanguage.exception.ModelNotFoundException;
 import com.senseoflanguage.mapper.ProfileMapper;
 import com.senseoflanguage.model.Collection;
 import com.senseoflanguage.model.Profile;
@@ -10,11 +9,13 @@ import com.senseoflanguage.model.enums.CollectionType;
 import com.senseoflanguage.model.enums.WordState;
 import com.senseoflanguage.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,23 +27,26 @@ public class TelegramBotServiceImpl implements TelegramBotService {
     private final CollectionService collectionService;
     private final ProfileMapper profileMapper;
     private final ResponseExecutor responseExecutor;
+    private final Random random;
 
     @Autowired
     public TelegramBotServiceImpl(ProfileService profileService,
                                   WordService wordService,
                                   CollectionService collectionService,
                                   ProfileMapper profileMapper,
-                                  ResponseExecutor responseExecutor) {
+                                  ResponseExecutor responseExecutor,
+                                  @Qualifier("random") Random random) {
         this.profileService = profileService;
         this.wordService = wordService;
         this.collectionService = collectionService;
         this.profileMapper = profileMapper;
         this.responseExecutor = responseExecutor;
+        this.random = random;
     }
 
     @Override
     public void start(Update update) {
-        String profileId = getProfileId(update);
+        String profileId = profileService.getProfileId(update);
 
         Optional<Profile> optionalProfile = profileService.findById(profileId);
         if (optionalProfile.isPresent()) {
@@ -65,45 +69,44 @@ public class TelegramBotServiceImpl implements TelegramBotService {
 
     @Override
     public void loadCollection(Update update, CollectionType collectionType) {
-        Profile profile = getProfile(update);
-        Set<String> collectionIds = profile.getCollections();
-        List<Collection> collections = collectionService.find(collectionIds);
-
-        Optional<Collection> collectionOptional = collections.stream()
-                .filter(c -> c.getName().equals(collectionType))
+        Profile profile = profileService.getProfile(update);
+        Optional<Collection> collection = profile.getCollections().stream()
+                .filter(c -> c.getCollectionType().equals(collectionType))
                 .findFirst();
 
-        if (collectionOptional.isPresent()) {
-            loadNextWord(collectionOptional.get(), profile, update, collectionType);
+        if (collection.isPresent()) {
+            loadNextWord(collection.get(), profile, update, collectionType);
         } else {
             List<Word> wordsByCollection = wordService.findAllByCollections(collectionType);
             Set<String> wordsIdByCollection = wordsByCollection.stream()
                     .map(Word::getId)
                     .collect(Collectors.toSet());
 
-            Collection newCollection = new Collection() {{
-                setName(collectionType);
-                for (String wordId : wordsIdByCollection) {
-                    profile.setCurrentWordId(wordId);
-                    getWords().add(new WordInfo() {{
-                        setWordId(wordId);
-                        setTimesToSolve(0);
-                        setWordState(WordState.DO_NOT_KNOW);
-                    }});
-                }
-            }};
+            Collection newCollection = new Collection();
+            newCollection.setCollectionType(collectionType);
+            for (String wordId : wordsIdByCollection) {
+                profile.setCurrentWordId(wordId);
+                WordInfo wordInfo = new WordInfo();
+                wordInfo.setWordId(wordId);
+                wordInfo.setTimesToSolve(0);
+                wordInfo.setWordState(WordState.DO_NOT_KNOW);
+
+                newCollection.getWords().add(wordInfo);
+            }
+
             collectionService.create(newCollection);
-            profile.getCollections().add(newCollection.getId());
+            profile.getCollections().add(newCollection);
             loadNextWord(newCollection, profile, update, collectionType);
         }
     }
 
     private void loadNextWord(Collection collection, Profile profile, Update update, CollectionType collectionType) {
-        Optional<WordInfo> wordInfoOptional = collection.getWords().stream()
+        List<WordInfo> wordInfos = collection.getWords().stream()
                 .filter(w -> !w.getWordState().equals(WordState.KNOW))
-                .findFirst();
-        if (wordInfoOptional.isPresent()) {
-            String wordId = wordInfoOptional.get().getWordId();
+                .collect(Collectors.toList());
+
+        if (!wordInfos.isEmpty()) {
+            String wordId = wordInfos.get(random.nextInt(wordInfos.size())).getWordId();
             responseExecutor.loadWord(update, wordId);
             profile.setCurrentCollection(collectionType);
             profile.setCurrentWordId(wordId);
@@ -117,7 +120,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
 
     @Override
     public void show(Update update) {
-        Profile profile = getProfile(update);
+        Profile profile = profileService.getProfile(update);
         String currentWordId = profile.getCurrentWordId();
         if (currentWordId != null) {
             responseExecutor.showByWordId(update, currentWordId);
@@ -128,7 +131,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
 
     @Override
     public void chooseDifficult(Update update, WordState wordState) {
-        Profile profile = getProfile(update);
+        Profile profile = profileService.getProfile(update);
         CollectionType currentCollectionType = profile.getCurrentCollection();
         String currentWordId = profile.getCurrentWordId();
         if (currentCollectionType == null || currentWordId == null) {
@@ -136,10 +139,8 @@ public class TelegramBotServiceImpl implements TelegramBotService {
             return;
         }
 
-        Set<String> collectionIds = profile.getCollections();
-        List<Collection> collections = collectionService.find(collectionIds);
-        Optional<Collection> collectionOptional = collections.stream()
-                .filter(c -> c.getName().equals(currentCollectionType))
+        Optional<Collection> collectionOptional = profile.getCollections().stream()
+                .filter(c -> c.getCollectionType().equals(currentCollectionType))
                 .findFirst();
 
         Collection collection;
@@ -169,7 +170,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
 
     @Override
     public void showExamples(Update update) {
-        Profile profile = getProfile(update);
+        Profile profile = profileService.getProfile(update);
         String currentWordId = profile.getCurrentWordId();
         if (currentWordId != null) {
             Word word = wordService.findById(currentWordId);
@@ -181,7 +182,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
 
     @Override
     public void showDetails(Update update) {
-        Profile profile = getProfile(update);
+        Profile profile = profileService.getProfile(update);
         String currentWordId = profile.getCurrentWordId();
         if (currentWordId != null) {
             Word word = wordService.findById(currentWordId);
@@ -193,7 +194,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
 
     @Override
     public void showAllInfo(Update update) {
-        Profile profile = getProfile(update);
+        Profile profile = profileService.getProfile(update);
         String currentWordId = profile.getCurrentWordId();
         if (currentWordId != null) {
             Word word = wordService.findById(currentWordId);
@@ -205,48 +206,9 @@ public class TelegramBotServiceImpl implements TelegramBotService {
 
     @Override
     public void showStatistic(Update update) {
-        Profile profile = getProfile(update);
+        Profile profile = profileService.getProfile(update);
         CollectionType currentCollection = profile.getCurrentCollection();
-        if (currentCollection != null) {
-            Set<String> collectionIds = profile.getCollections();
-            List<Collection> collections = collectionService.find(collectionIds);
-
-            Optional<Collection> collectionOptional = collections.stream()
-                    .filter(c -> c.getName().equals(currentCollection))
-                    .findFirst();
-
-            if (collectionOptional.isPresent()) {
-                Collection collection = collectionOptional.get();
-                responseExecutor.showStatistic(update, collection);
-            } else {
-                loadCollection(update, currentCollection);
-            }
-        } else {
-            chooseCollection(update);
-        }
-    }
-
-    private Profile getProfile(Update update) {
-        String profileId = getProfileId(update);
-
-        Optional<Profile> profileOptional = profileService.findById(profileId);
-
-        if (profileOptional.isPresent()) {
-            return profileOptional.get();
-        } else {
-            start(update);
-            throw new ModelNotFoundException("Profile not found!");
-        }
-    }
-
-    private String getProfileId(Update update) {
-        String profileId;
-        if (update.getMessage() != null) {
-            profileId = update.getMessage().getFrom().getId().toString();
-        } else {
-            profileId = update.getCallbackQuery().getFrom().getId().toString();
-        }
-        return profileId;
+        responseExecutor.showStatistic(update, currentCollection);
     }
 
 }

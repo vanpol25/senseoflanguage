@@ -23,4 +23,5 @@ public interface TelegramBotService {
     void showAllInfo(Update update);
 
     void showStatistic(Update update);
+
 }

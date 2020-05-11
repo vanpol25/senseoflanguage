@@ -7,7 +7,9 @@ import com.senseoflanguage.service.CollectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class CollectionServiceImpl implements CollectionService {
@@ -21,57 +23,29 @@ public class CollectionServiceImpl implements CollectionService {
 
     @Override
     public Collection create(Collection collection) {
-        try {
-            return collectionRepository.save(collection);
-        } catch (StackOverflowError error) {
-            error.printStackTrace();
-            throw error;
-        }
+        return collectionRepository.save(collection);
     }
 
     @Override
     public Collection update(Collection collection) {
-        try {
-            return collectionRepository.save(collection);
-        } catch (StackOverflowError error) {
-            error.printStackTrace();
-            throw error;
-        }
+        return collectionRepository.save(collection);
     }
 
     @Override
     public void delete(String id) {
         Collection collection = findById(id)
                 .orElseThrow(() -> new ModelNotFoundException("Collection not found with id=" + id));
-        try {
-            collectionRepository.delete(collection);
-        } catch (StackOverflowError error) {
-            error.printStackTrace();
-            throw error;
-        }
+        collectionRepository.delete(collection);
     }
 
     @Override
     public Optional<Collection> findById(String id) {
-        try {
-            return collectionRepository.findById(id);
-        } catch (StackOverflowError error) {
-            error.printStackTrace();
-            throw error;
-        }
+        return collectionRepository.findById(id);
     }
 
     @Override
-    public List<Collection> find(Set<String> collectionIds) {
-        List<Collection> collections = new ArrayList<>();
-        try {
-            collectionRepository.findAllById(collectionIds)
-                    .forEach(collections::add);
-        } catch (StackOverflowError error) {
-            error.printStackTrace();
-            throw error;
-        }
-        return collections;
+    public List<Collection> findAllById(List<String> collectionIds) {
+        return collectionRepository.findAllByIdIn(collectionIds);
     }
 
 }

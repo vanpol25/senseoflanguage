@@ -1,9 +1,14 @@
 package com.senseoflanguage.service.impl;
 
 import com.senseoflanguage.config.SenseOfLanguageBotConfig;
+import com.senseoflanguage.exception.ModelNotFoundException;
 import com.senseoflanguage.model.Collection;
+import com.senseoflanguage.model.Profile;
 import com.senseoflanguage.model.Word;
+import com.senseoflanguage.model.WordInfo;
 import com.senseoflanguage.model.enums.CollectionType;
+import com.senseoflanguage.model.enums.WordState;
+import com.senseoflanguage.service.ProfileService;
 import com.senseoflanguage.service.ResponseExecutor;
 import com.senseoflanguage.service.WordService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +19,11 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ResponseExecutorImpl implements ResponseExecutor {
@@ -31,6 +41,7 @@ public class ResponseExecutorImpl implements ResponseExecutor {
 
     private final SenseOfLanguageBotConfig solbc;
     private final WordService wordService;
+    private final ProfileService profileService;
     private final ReplyKeyboardMarkup start;
     private final ReplyKeyboardMarkup loadWord;
     private final ReplyKeyboardMarkup showAnswer;
@@ -39,12 +50,14 @@ public class ResponseExecutorImpl implements ResponseExecutor {
     @Autowired
     public ResponseExecutorImpl(SenseOfLanguageBotConfig senseOfLanguageBotConfig,
                                 WordService wordService,
+                                ProfileService profileService,
                                 @Qualifier(value = "start") ReplyKeyboardMarkup start,
                                 @Qualifier(value = "loadWord") ReplyKeyboardMarkup loadWord,
                                 @Qualifier(value = "showAnswer") ReplyKeyboardMarkup showAnswer,
                                 @Qualifier(value = "chooseCollection") InlineKeyboardMarkup chooseCollection) {
         this.solbc = senseOfLanguageBotConfig;
         this.wordService = wordService;
+        this.profileService = profileService;
         this.start = start;
         this.loadWord = loadWord;
         this.showAnswer = showAnswer;
@@ -129,6 +142,48 @@ public class ResponseExecutorImpl implements ResponseExecutor {
 
     @Override
     public void collectionFinishAndStatistic(Update update, CollectionType collectionType) {
+        Integer progress;
+        List<WordInfo> mostHardWordForUser;
+        List<WordInfo> mostHardWordByFrequency;
+
+        Profile profile = profileService.getProfile(update);
+
+
+
+    }
+
+    @Override
+    public void showStatistic(Update update, CollectionType collectionType) {
+        Integer progressInPercentage;
+        List<WordInfo> mostHardWordForUser;
+        List<WordInfo> mostHardWordByFrequency;
+
+        Profile profile = profileService.getProfile(update);
+        Collection collection = profile.getCollections().stream()
+                .filter(c -> c.getCollectionType().equals(collectionType))
+                .findFirst()
+                .orElseThrow(() -> new ModelNotFoundException("Collection with " + collectionType.text() + " not found!"));
+
+        Long totalLearnedWords = collection.getWords().stream()
+                .filter(w -> w.getWordState().equals(WordState.KNOW))
+                .count();
+
+        mostHardWordForUser = collection.getWords().stream()
+                .sorted(Comparator.comparing(WordInfo::getTimesToSolve))
+                .limit(10)
+                .collect(Collectors.toList());
+
+        List<String> wordIds = collection.getWords().stream()
+                .map(WordInfo::getWordId)
+                .collect(Collectors.toList());
+
+        List<Word> words = wordService.findAllByIdIn(wordIds);
+
+        List<Word> wordsByFrequencyAsc = words.stream()
+                .sorted(Comparator.comparing(Word::getFrequency))
+                .limit(10)
+                .collect(Collectors.toList());
+
 
     }
 
@@ -144,11 +199,6 @@ public class ResponseExecutorImpl implements ResponseExecutor {
 
     @Override
     public void showAllInfo(Update update, Word word) {
-
-    }
-
-    @Override
-    public void showStatistic(Update update, Collection collection) {
 
     }
 

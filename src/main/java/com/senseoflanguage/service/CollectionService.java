@@ -15,5 +15,5 @@ public interface CollectionService {
 
     Optional<Collection> findById(String id);
 
-    List<Collection> find(Set<String> collectionIds);
+    List<Collection> findAllById(List<String> collectionIds);
 }

@@ -29,7 +29,17 @@ public class SenseOfLanguageBotConfig extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        executor.submit(() -> commandReceived(update));
+        executor.submit(() -> {
+            try {
+                try {
+                    commandReceived(update);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        });
     }
 
     private void commandReceived(Update update) {

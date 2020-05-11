@@ -1,6 +1,5 @@
 package com.senseoflanguage.service;
 
-import com.senseoflanguage.model.Collection;
 import com.senseoflanguage.model.Word;
 import com.senseoflanguage.model.enums.CollectionType;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -24,5 +23,5 @@ public interface ResponseExecutor {
 
     void showAllInfo(Update update, Word word);
 
-    void showStatistic(Update update, Collection collection);
+    void showStatistic(Update update, CollectionType collectionType);
 }

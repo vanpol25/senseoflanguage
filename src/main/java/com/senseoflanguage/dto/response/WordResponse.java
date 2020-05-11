@@ -12,6 +12,7 @@ import java.util.List;
 @ToString
 public class WordResponse {
 
+    private String id;
     private String eng;
     private String ukr;
     private String translit;

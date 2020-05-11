@@ -46,21 +46,14 @@ public class WordServiceImpl implements WordService {
     public List<Word> createAll(List<Word> requests, String collection) {
         int percentage = 0;
         int progress = 0;
+        int step = requests.size() / 100 < 1 ? 1 : requests.size();
 
         for (Word word : requests) {
             progress++;
-            try {
-                wordsApiDefinition.addDefinition(word);
-            } catch (Exception e) {
-                System.out.println("Def,Error - " + word.getEng());
-            }
-//            try {
-//                wordRepository.save(word);
-//            } catch (StackOverflowError e) {
-//                System.out.println("Mongo,Error - " + word.getEng());
-//            }
-            if (progress % 5 == 0) {
-                System.out.println(percentage++ + "%");
+//            wordsApiDefinition.addDefinition(word);
+//            wordRepository.save(word);
+            if (progress % step == 0) {
+                System.out.println(++percentage + "%");
             }
         }
 
@@ -126,6 +119,11 @@ public class WordServiceImpl implements WordService {
     @Override
     public Page<Word> findAll(Pageable pageable) {
         return wordRepository.findAll(pageable);
+    }
+
+    @Override
+    public List<Word> findAllByIdIn(List<String> ids) {
+        return wordRepository.findAllByIdIn(ids);
     }
 
 }

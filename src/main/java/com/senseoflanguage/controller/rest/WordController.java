@@ -140,8 +140,6 @@ public class WordController {
             Word word = wordMapper.map(mainText);
             word.getCollections().add(collection);
             requests.add(word);
-            //While testing
-            System.out.println(word.getEng());
         }
         List<Word> words = wordService.createAll(requests, collection.name());
         List<WordResponse> wordResponses = wordMapper.mapListResponse(words);
@@ -158,7 +156,7 @@ public class WordController {
     )
     public Response<List<WordResponse>> createAll(@RequestBody List<Word> words) {
         List<Word> all = wordService.createAll(words);
-        return new Response<>(HttpStatus.OK, wordMapper.mapListResponse(all));
+        return new Response<>(HttpStatus.OK);
     }
 
     @ApiOperation(value = "Delete models \"word\" by body")

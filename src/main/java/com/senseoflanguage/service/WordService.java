@@ -31,4 +31,5 @@ public interface WordService {
 
     Word update(Word request);
 
+    List<Word> findAllByIdIn(List<String> ids);
 }

@@ -19,6 +19,6 @@ public interface WordRepository extends MongoRepository<Word, String> {
 
     List<Word> findAllByCollectionsOrderByFrequencyDesc(CollectionType collection);
 
-//    Word save(String json);
+    List<Word> findAllByIdIn(List<String> ids);
 
 }

@@ -17,6 +17,5 @@ public class WordWordsApi implements Serializable {
     private String word;
     private BigDecimal frequency;
     private Set<DefinitionWordsApi> results = new HashSet<>();
-    private Pronunciation pronunciation;
 
 }

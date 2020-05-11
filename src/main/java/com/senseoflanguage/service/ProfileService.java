@@ -14,4 +14,7 @@ public interface ProfileService {
 
     Optional<Profile> findById(String id);
 
+    Profile getProfile(Update update);
+
+    String getProfileId(Update update);
 }
