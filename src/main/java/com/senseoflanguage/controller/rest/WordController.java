@@ -45,7 +45,7 @@ public class WordController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public Response<WordResponse> Create(@Valid @RequestBody WordRequest wordRequest,
+    public Response<WordResponse> create(@Valid @RequestBody WordRequest wordRequest,
                                        @NotBlank @RequestParam("collection") CollectionType collection) {
         Word request = wordMapper.map(wordRequest);
         request.getCollections().add(collection);

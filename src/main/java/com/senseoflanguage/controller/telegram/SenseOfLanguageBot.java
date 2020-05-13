@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import javax.xml.ws.RequestWrapper;
+
 @Component
 public class SenseOfLanguageBot {
 

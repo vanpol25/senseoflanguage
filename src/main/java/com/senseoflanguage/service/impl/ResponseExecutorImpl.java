@@ -8,6 +8,7 @@ import com.senseoflanguage.model.Word;
 import com.senseoflanguage.model.WordInfo;
 import com.senseoflanguage.model.enums.CollectionType;
 import com.senseoflanguage.model.enums.WordState;
+import com.senseoflanguage.service.ImageService;
 import com.senseoflanguage.service.ProfileService;
 import com.senseoflanguage.service.ResponseExecutor;
 import com.senseoflanguage.service.WordService;
@@ -15,33 +16,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class ResponseExecutorImpl implements ResponseExecutor {
 
-    String htmlForm = "<b>bold</b>, <strong>bold</strong>\n" +
-            "<i>italic</i>, <em>italic</em>\n" +
-            "<u>underline</u>, <ins>underline</ins>\n" +
-            "<s>strikethrough</s>, <strike>strikethrough</strike>, <del>strikethrough</del>\n" +
-            "<b>bold <i>italic bold <s>italic bold strikethrough</s> <u>underline italic bold</u></i> bold</b>\n" +
-            "<a href=\"http://www.example.com/\">inline URL</a>\n" +
-            "<a href=\"tg://user?id=123456789\">inline mention of a user</a>\n" +
-            "<code>inline fixed-width code</code>\n" +
-            "<pre>pre-formatted fixed-width code block</pre>\n" +
-            "<pre><code class=\"language-python\">pre-formatted fixed-width code block written in the Python programming language</code></pre>";
-
     private final SenseOfLanguageBotConfig solbc;
     private final WordService wordService;
     private final ProfileService profileService;
+    private final ImageService imageService;
     private final ReplyKeyboardMarkup start;
     private final ReplyKeyboardMarkup loadWord;
     private final ReplyKeyboardMarkup showAnswer;
@@ -51,6 +44,7 @@ public class ResponseExecutorImpl implements ResponseExecutor {
     public ResponseExecutorImpl(SenseOfLanguageBotConfig senseOfLanguageBotConfig,
                                 WordService wordService,
                                 ProfileService profileService,
+                                ImageService imageService,
                                 @Qualifier(value = "start") ReplyKeyboardMarkup start,
                                 @Qualifier(value = "loadWord") ReplyKeyboardMarkup loadWord,
                                 @Qualifier(value = "showAnswer") ReplyKeyboardMarkup showAnswer,
@@ -58,6 +52,7 @@ public class ResponseExecutorImpl implements ResponseExecutor {
         this.solbc = senseOfLanguageBotConfig;
         this.wordService = wordService;
         this.profileService = profileService;
+        this.imageService = imageService;
         this.start = start;
         this.loadWord = loadWord;
         this.showAnswer = showAnswer;
@@ -120,11 +115,21 @@ public class ResponseExecutorImpl implements ResponseExecutor {
 
         Word word = wordService.findById(wordId);
 
-        SendMessage startMessage = new SendMessage()
+        InputFile photo;
+        try {
+            photo = imageService.htmlToImage(word.getEng());
+        } catch (IOException e) {
+            execute(new SendMessage()
+            .setChatId(chatId)
+            .setText("Word: " + word.getEng()));
+            return;
+        }
+
+        SendPhoto message = new SendPhoto()
                 .setChatId(chatId)
-                .setText("Word: " + word.getEng())
+                .setPhoto(photo)
                 .setReplyMarkup(loadWord);
-        execute(startMessage);
+        executePhoto(message);
     }
 
     @Override
@@ -133,11 +138,21 @@ public class ResponseExecutorImpl implements ResponseExecutor {
 
         Word word = wordService.findById(currentWordId);
 
-        SendMessage startMessage = new SendMessage()
+        InputFile photo;
+        try {
+            photo = imageService.htmlToImage(word.getUkr());
+        } catch (IOException e) {
+            execute(new SendMessage()
+                    .setChatId(chatId)
+                    .setText("Answer: " + word.getUkr()));
+            return;
+        }
+
+        SendPhoto message = new SendPhoto()
                 .setChatId(chatId)
-                .setText("Answer: " + word.getUkr())
+                .setPhoto(photo)
                 .setReplyMarkup(showAnswer);
-        execute(startMessage);
+        executePhoto(message);
     }
 
     @Override
@@ -215,6 +230,14 @@ public class ResponseExecutorImpl implements ResponseExecutor {
     private void execute(SendMessage sendMessage) {
         try {
             solbc.execute(sendMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void executePhoto(SendPhoto sendPhoto) {
+        try {
+            solbc.execute(sendPhoto);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
