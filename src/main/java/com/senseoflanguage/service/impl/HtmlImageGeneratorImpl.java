@@ -20,6 +20,7 @@ public class HtmlImageGeneratorImpl implements ImageService {
     @Override
     public InputFile htmlToImage(String word) throws IOException {
         HtmlImageGenerator imageGenerator = new HtmlImageGenerator();
+
         imageGenerator.loadHtml(String.format(ImageService.HTML_TO_IMAGE, word));
         imageGenerator.saveAsImage("E:\\HtmlImageGeneratorImpl.png");
 

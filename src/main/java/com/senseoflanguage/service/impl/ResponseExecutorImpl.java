@@ -48,7 +48,8 @@ public class ResponseExecutorImpl implements ResponseExecutor {
                                 @Qualifier(value = "start") ReplyKeyboardMarkup start,
                                 @Qualifier(value = "loadWord") ReplyKeyboardMarkup loadWord,
                                 @Qualifier(value = "showAnswer") ReplyKeyboardMarkup showAnswer,
-                                @Qualifier(value = "chooseCollection") InlineKeyboardMarkup chooseCollection) {
+                                @Qualifier(value = "chooseCollection") InlineKeyboardMarkup chooseCollection,
+                                @Qualifier(value = "hat") InlineKeyboardMarkup hat) {
         this.solbc = senseOfLanguageBotConfig;
         this.wordService = wordService;
         this.profileService = profileService;

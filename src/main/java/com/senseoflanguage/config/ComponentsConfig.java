@@ -17,6 +17,25 @@ import java.util.*;
 public class ComponentsConfig {
 
     @Bean
+    @Qualifier("hat")
+    public InlineKeyboardMarkup hat() {
+        List<List<InlineKeyboardButton>> inlineKeyboardButtons = new ArrayList<>();
+        inlineKeyboardButtons.add(
+                Arrays.asList(
+                        new InlineKeyboardButton()
+                                .setText(TelegramCommand.EXAMPLES.text())
+                                .setCallbackData(TelegramCommand.EXAMPLES.command()),
+                        new InlineKeyboardButton()
+                                .setText(TelegramCommand.STATISTIC.text())
+                                .setCallbackData(TelegramCommand.STATISTIC.command()),
+                        new InlineKeyboardButton()
+                                .setText(TelegramCommand.ALL_INFO.text())
+                                .setCallbackData(TelegramCommand.ALL_INFO.command())));
+
+        return new InlineKeyboardMarkup(inlineKeyboardButtons);
+    }
+
+    @Bean
     @Qualifier("start")
     public ReplyKeyboardMarkup start() {
         KeyboardRow keyboard = new KeyboardRow();
@@ -57,8 +76,7 @@ public class ComponentsConfig {
     public ReplyKeyboardMarkup showAnswer() {
         KeyboardRow keyboard = new KeyboardRow();
         keyboard.add(new KeyboardButton().setText(TelegramCommand.EASY.text()));
-//<--- Hidden until will be finded an algorithm --->
-//        keyboard.add(new KeyboardButton().setText(TelegramCommand.MEDIUM.text()));
+        keyboard.add(new KeyboardButton().setText(TelegramCommand.MEDIUM.text()));
         keyboard.add(new KeyboardButton().setText(TelegramCommand.HARD.text()));
 
         return new ReplyKeyboardMarkup(Collections.singletonList(keyboard))

@@ -89,11 +89,9 @@ public class TelegramBotServiceImpl implements TelegramBotService {
                 WordInfo wordInfo = new WordInfo();
                 wordInfo.setWordId(wordId);
                 wordInfo.setTimesToSolve(0);
-                wordInfo.setWordState(WordState.DO_NOT_KNOW);
-
+                wordInfo.setWordState(WordState.NEVER_SAW);
                 newCollection.getWords().add(wordInfo);
             }
-
             collectionService.create(newCollection);
             profile.getCollections().add(newCollection);
             loadNextWord(newCollection, profile, update, collectionType);
@@ -101,12 +99,26 @@ public class TelegramBotServiceImpl implements TelegramBotService {
     }
 
     private void loadNextWord(Collection collection, Profile profile, Update update, CollectionType collectionType) {
-        List<WordInfo> wordInfos = collection.getWords().stream()
+        List<WordInfo> wordInfosNotKnow = collection.getWords().stream()
                 .filter(w -> !w.getWordState().equals(WordState.KNOW))
                 .collect(Collectors.toList());
 
-        if (!wordInfos.isEmpty()) {
-            String wordId = wordInfos.get(random.nextInt(wordInfos.size())).getWordId();
+        if (!wordInfosNotKnow.isEmpty()) {
+            int rand = random.nextInt(100);
+
+            WordState wordState = (rand < 65) ? WordState.NEVER_SAW :
+                    (rand > 65 && rand < 90) ? WordState.DO_NOT_KNOW : WordState.DO_NOT_FULL_KNOW;
+
+            List<WordInfo> wordInfos = collection.getWords().stream()
+                    .filter(w -> !w.getWordState().equals(wordState))
+                    .collect(Collectors.toList());
+
+            String wordId;
+            if (!wordInfos.isEmpty()) {
+                wordId = wordInfos.get(random.nextInt(wordInfos.size())).getWordId();
+            } else {
+                wordId = wordInfosNotKnow.get(random.nextInt(wordInfosNotKnow.size())).getWordId();
+            }
             responseExecutor.loadWord(update, wordId);
             profile.setCurrentCollection(collectionType);
             profile.setCurrentWordId(wordId);

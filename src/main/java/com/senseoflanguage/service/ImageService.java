@@ -29,6 +29,6 @@ public interface ImageService {
             "</body>\n" +
             "</html>\n";
 
-    InputFile htmlToImage(String html) throws IOException;
+    InputFile htmlToImage(String word) throws IOException;
 
 }
